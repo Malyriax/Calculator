@@ -220,7 +220,7 @@ public calc(){
     System.out.println("Braces found: " + Arrays.toString(act2)); // Смотрим ВСЕ найденные скобки
     
     String[] act3 = removeBraces(createUsableForm(act2[2])); 
-    System.out.println("Cleaned array: " + Arrays.toString(act3)); // Смотрим на числа без скобок
+    System.out.println(": " + Arrays.toString(act3)); // Смотрим на числа без скобок
         
         
     }
