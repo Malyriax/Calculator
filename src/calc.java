@@ -214,13 +214,13 @@ public calc(){
             System.out.println(resultString);
         } else {
     String act1 = addBracesIfNeeded(test);
-    System.out.println("Fixed String: " + act1); // Проверяем, добавились ли скобки
+    System.out.println("Fixed String: " + act1); 
     
     String[] act2 = parceByBraces(act1);
-    System.out.println("Braces found: " + Arrays.toString(act2)); // Смотрим ВСЕ найденные скобки
+    System.out.println("Braces found: " + Arrays.toString(act2)); 
     
     String[] act3 = removeBraces(createUsableForm(act2[2])); 
-    System.out.println(": " + Arrays.toString(act3)); // Смотрим на числа без скобок
+    System.out.println("Cleared array: " + Arrays.toString(act3)); 
         
         
     }
