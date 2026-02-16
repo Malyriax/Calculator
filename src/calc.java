@@ -113,7 +113,31 @@ public calc(){
         return "(" + finalInputFixed + ")";
     }
         
-
+    public static String fixHiddenMult(String input){
+        StringBuilder fixedInput = new StringBuilder(input);
+        for(int i = fixedInput.length() - 2; i >= 0; i--){
+            char currentPosition = fixedInput.charAt(i);
+            char currentNextPosition = fixedInput.charAt(i+1);
+            if("0123456789.".contains(String.valueOf((currentPosition))) && currentNextPosition == '('){
+                fixedInput.insert(i+1, "*");
+            }
+        }
+        for(int i = fixedInput.length() - 1; i > 0; i--){
+            char currentPosition = fixedInput.charAt(i);
+            char currentPreviousPosition = fixedInput.charAt(i-1);
+            if("0123456789.".contains(String.valueOf((currentPosition))) && currentPreviousPosition == ')'){
+                fixedInput.insert(i, "*");
+            }
+        }
+        for(int i = fixedInput.length() - 2; i > 0; i--){
+            char currentPosition = fixedInput.charAt(i);
+            char currentNextPosition = fixedInput.charAt(i+1);
+            if(currentPosition == ')' && currentNextPosition == '('){
+                fixedInput.insert(i+1, "*");
+            }
+        }
+        return fixedInput.toString();
+    }
 
 
         // returns an array of braces in consecutive order
@@ -299,16 +323,16 @@ public calc(){
     }
     
     public static void main(String[] args) throws Exception {
-       // calc newcalc = new calc();
-      //  newcalc.setVisible(true);
-     //String test = "((((5*2)-(2-5))+4";
-     String test = "5-(-(-5+2)*2^2 + 5)*(5+1)-1";
+    //   calc newcalc = new calc();
+     //   newcalc.setVisible(true);
+     String test = "5(2+3)(5-2)()";
+     //String test = "-2.5^2+(-4*--0.5)-(-(-2^3)/--1)";
         validInput(test);
         if(reasonableInput == false){
             resultString = "Invalid input, check amount of braces";
             System.out.println(resultString);
         } else {
-    String act1 = addBracesIfNeeded(test);
+    String act1 = fixHiddenMult(addBracesIfNeeded(test));
    // System.out.println("Fixed String: " + act1); 
     
     String[] act2 = parceByBraces(act1);
