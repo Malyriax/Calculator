@@ -17,6 +17,7 @@ static int amountOfRightBraces = 0;
 static boolean reasonableInput;
 static int bracesDifference = 0;
 String equationEnoughBraces;
+static String errorMessage = "Error!";
 public calc(){
     setTitle("calc (short for calculator");
     setSize(400, 700);
@@ -24,15 +25,21 @@ public calc(){
     setLocationRelativeTo(null);
     setLayout(new BorderLayout());
     field = new JTextField();
-    field.setEditable(true);
+    field.setEditable(false);
     add(field, BorderLayout.NORTH);
+    field.setFont(new Font("Arial", Font.BOLD, 22));
     JPanel buttons = new JPanel();
     buttons.setLayout(new GridLayout(5, 4, 8,8));
     String[] nums = {
-        "1", "2", "3", "/", "4", "5", "6", "*", "7", "8", "9", "-", "C", "0", "=", "+", ".", "^", "(", ")"
+        "1", "2", "3", "/", 
+        "4", "5", "6", "*", 
+        "7", "8", "9", "-", 
+        "C", "0", "=", "+", 
+        ".", "^", "(", ")"
     };
     for(int i = 0; i < nums.length; i++){
         JButton btn = new JButton(nums[i]); 
+        btn.addActionListener(this);
     buttons.add(btn);
     }
     add(buttons, BorderLayout.CENTER);
@@ -40,26 +47,90 @@ public calc(){
 
     public void actionPerformed(ActionEvent buttonPressed){
         String whatBroPressed = buttonPressed.getActionCommand();
-        if("1234567890.".contains(whatBroPressed)){
+        String currentText = field.getText();
+        if(field.getText().contains("Error")){
+            field.setText("");
+        }
+        if("1234567890".contains(whatBroPressed)){
             field.setText(field.getText() + whatBroPressed);
-            
         } 
+        if(".".equals(whatBroPressed)){
+            if (currentText.isEmpty()){
+                field.setText("0.");
+                return;
+            } 
+             
+            char lastSymbol = currentText.charAt(currentText.length() - 1);
+            if (!"0123456789".contains(String.valueOf(lastSymbol))) {
+                return; 
+            }
+            boolean thereIsNoDotAlready = false;
+            for (int i = currentText.length() - 1; i >= 0; i--) {
+                char currentChar = currentText.charAt(i);
+                if(currentChar == '.'){
+                    thereIsNoDotAlready = false;
+                    break;
+                }
+                if("*+-/^()".contains(String.valueOf(currentChar))){
+                    thereIsNoDotAlready = true;
+                }
+                if(thereIsNoDotAlready == true){
+                    field.setText(currentText + whatBroPressed);
+                }
+            }
+            
+            }
+
+        
         else if("C".contains(whatBroPressed)){
             firstNum = 0;
             secondNum = 0;
             smoothOperator = null;
             field.setText("");
+            amountOfLeftBraces = 0;
+            amountOfRightBraces = 0;
+            reasonableInput = false;
             // дописать все прочие переменные
         }
         else if("*+-/^()".contains(whatBroPressed)){
-            field.setText(field.getText() + whatBroPressed);
-
+            if (currentText.isEmpty()) {
+                if ("+-.".contains(whatBroPressed)) {
+                    field.setText(whatBroPressed);
+                }
+                return; 
         }
+        char lastChar = currentText.charAt(currentText.length() - 1);
+        boolean currentSimbolIsOperator = "*+-/^.".contains(whatBroPressed);
+        boolean previousSimbolWasOperator = "*+-/^.".contains(String.valueOf(lastChar));
+        if (currentSimbolIsOperator && previousSimbolWasOperator) {
+                field.setText(currentText.substring(0, currentText.length() - 1) + whatBroPressed);
+    } else field.setText(currentText + whatBroPressed);
+}
         else if("=".contains(whatBroPressed)){
-        field.setText((resultString));
+            validInput(currentText);
+            if (!reasonableInput) {
+                field.setText("Error: Input does not make sence");
+            } else {
+                try {
+                    String act1 = fixHiddenMult(addBracesIfNeeded(currentText));
+                    String[] act2 = parceByBraces(act1);
+                    String[] act3 = solveAllBraces(act2);
+                    String result = act3[act3.length - 1];
+                    if(result.charAt(result.length() - 1) == '0' && result.charAt(result.length() - 2) == '.'){
+                        result = result.substring(0, result.length() - 2);
+                    }
+                    field.setText(result);
+                } catch (ArithmeticException mathError) { 
+                    field.setText("Error: You cannot divide by zero");
+                }
+                catch (Exception exception)
+                    {
+                field.setText("Error: Incorrect Input");
+            }   
+        }
         }
     }
-
+ 
 
 
 
@@ -76,6 +147,8 @@ public calc(){
                 amountOfRightBraces++;
             }
             }
+        int lockedamountOfLeftBraces = amountOfLeftBraces;
+        int lockedamountOfRightBraces = amountOfRightBraces;
         if(amountOfRightBraces <= amountOfLeftBraces){
             reasonableInput = true;
         }
@@ -93,9 +166,44 @@ public calc(){
                 break;
             }
         }
+        if(finalInput.contains("()")){
+            reasonableInput = false;
+        }
+        boolean firstSimbolIsNotOperator = false;
+        for(int i = 0; i < finalInput.length(); i++){
+            if("0123456789".contains(String.valueOf(finalInput.charAt(i)))){
+                firstSimbolIsNotOperator = true;
+                break;
+            }
+            if("*/^".contains(String.valueOf(finalInput.charAt(i) )) && firstSimbolIsNotOperator == false){
+                reasonableInput = false;
+                break;
+            }
+        
+        }
+        boolean lastSimbolIsNotOperator = false;
+        for(int i = finalInput.length() - 1; i>0; i--){
+            if("0123456789".contains(String.valueOf(finalInput.charAt(i)))){
+                lastSimbolIsNotOperator = true;
+                break;
+            }
+            if("*/^".contains(String.valueOf(finalInput.charAt(i) )) && lastSimbolIsNotOperator == false){
+                reasonableInput = false;
+                break;
+            }
+        }
+        String equationNoBracesNoMinus = finalInput.replace("(", "").replace("(", "").replace("-", "");
+        if(equationNoBracesNoMinus.equals("")){
+            reasonableInput = false;
+        }
+        if(addBracesIfNeeded(finalInput).contains("()")){
+           reasonableInput = false; 
+        }
+        amountOfLeftBraces = lockedamountOfLeftBraces;
+        amountOfRightBraces = lockedamountOfRightBraces;
     }
 
-
+    
 
         // add closing braces if necessary
     public static String addBracesIfNeeded(String finalInput){
@@ -190,10 +298,10 @@ public calc(){
             currentNumber += currentSymbol;
         } 
         else if ("*+/^".contains(currentSymbol)) {
-            //if (!currentNumber.isEmpty()) {
+            if (!currentNumber.isEmpty()) {
             equation.add(currentNumber);
             currentNumber = ""; 
-            //}
+            }
             equation.add(currentSymbol);
         }
         else if ("-".contains(currentSymbol)){
@@ -213,44 +321,9 @@ public calc(){
         if (!currentNumber.isEmpty()) {
         equation.add(currentNumber);
          }
-       //  for(int i = 0; i < equation.size(); i++){
-       //     if(equation.get(i).contains("--")){
-        //        equation.set(i, equation.get(i).replace("--", ""));
-        //    }
-      //   }
     return equation;
     }
-    //public static String[] removeBraces(String[] input){
-     //   int amountOfOddValues = 1;
-     //   String[] brace = input;
-     //   for(int i = 0; i < brace.length; i++){
-     //       if(brace[i].equals("(") || brace[i].equals(")")){
-     //           for(int j = i; j < brace.length - 1; j++){
-      //              brace[j] = brace[j + 1];
-      //          }
-      //      brace[brace.length - amountOfOddValues] = "";
-      //      amountOfOddValues++;
-      //      i--;
-      //      }
-      //  }
-        // step 2
-     //   int extraSpaceCounter = 0;
-     //   for(int i = 0; i < brace.length; i++){
-      //      if(brace[i].equals("")){
-       //         extraSpaceCounter++;
-      //      }
-      //  }
-   //     String braceNoExtraSpace[] = new String[brace.length - extraSpaceCounter];
-        //java.util.Arrays.fill(braceNoExtraSpace, "");
-   //     int insertIndex = 0;
-   //     for(int i = 0; i < braceNoExtraSpace.length; i++){
-   //         if(!brace[i].equals("")){
-    //        braceNoExtraSpace[insertIndex] = brace[i];
-    //        insertIndex++;
-    //        }
-   //     }
-  // return braceNoExtraSpace;
-   // }
+   
     // I just found out about ArrayList omfg
     public static ArrayList<String> solvePower(ArrayList<String> equation){
         int initialSizeOfList = equation.size();
@@ -275,7 +348,12 @@ public calc(){
                 equation.remove(i);
             }
             else if(equation.get(i).equals("/")){
-                 double currentResult = Double.parseDouble(equation.get(i-1)) / Double.parseDouble(equation.get(i+1));
+                double num1 = Double.parseDouble(equation.get(i-1));
+                double num2 = Double.parseDouble(equation.get(i+1));
+                if(num2 == 0.0){
+                    throw new ArithmeticException("You cannot divide by zero");
+                }
+                 double currentResult = num1 / num2;
                  equation.set(i - 1, String.valueOf(currentResult));
                 equation.remove(i);
                 equation.remove(i);
@@ -284,7 +362,9 @@ public calc(){
         return equation;
     }
     public static String solvePlusMinus(ArrayList<String> equation){
-
+       if(equation.get(0).equals("+")){
+            equation.add(0, "0");
+        } 
         double firstValue = 0;
         // no need since negatives are now at the same index
       //  if(equation.get(0).equals("-")){
@@ -323,28 +403,28 @@ public calc(){
     }
     
     public static void main(String[] args) throws Exception {
-    //   calc newcalc = new calc();
-     //   newcalc.setVisible(true);
-     String test = "5(2+3)(5-2)()";
+       calc newcalc = new calc();
+       newcalc.setVisible(true);
+    // String test = "5/0";
      //String test = "-2.5^2+(-4*--0.5)-(-(-2^3)/--1)";
-        validInput(test);
-        if(reasonableInput == false){
-            resultString = "Invalid input, check amount of braces";
-            System.out.println(resultString);
-        } else {
-    String act1 = fixHiddenMult(addBracesIfNeeded(test));
-   // System.out.println("Fixed String: " + act1); 
+     //   validInput(test);
+    //    if(reasonableInput == false){
+     //       resultString = "Invalid input, check amount of braces";
+       //     System.out.println(resultString);
+      //  } else {
+  //  String act1 = fixHiddenMult(addBracesIfNeeded(test));
+ //  System.out.println("Fixed String: " + act1); 
     
-    String[] act2 = parceByBraces(act1);
-  //  System.out.println("Braces found: " + Arrays.toString(act2));
+  //  String[] act2 = parceByBraces(act1);
+ // System.out.println("Braces found: " + Arrays.toString(act2));
    
-    String[] act3 = solveAllBraces(act2);
-   // System.out.println(Arrays.toString(act3));
+  //  String[] act3 = solveAllBraces(act2);
+  // System.out.println(Arrays.toString(act3));
 
-    System.out.println(act3[act3.length - 1]);
+   // System.out.println(act3[act3.length - 1]);
       // System.out.println(solveMultDiv(createUsableForm(("--3*2 + 5)")))) ;
       // System.out.println(Double.parseDouble("-5"));
     }
 }
-}
+
 
