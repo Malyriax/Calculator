@@ -151,6 +151,11 @@ public calc(){
                     String[] act3 = solveAllBraces(act2);
                     String result = act3[act3.length - 1];
                    
+                    if (!result.contains("E")) {
+                        double tempForRounding = Double.parseDouble(result);
+                        tempForRounding = Math.round(tempForRounding * 1000000000000.0) / 1000000000000.0;
+                        result = String.valueOf(tempForRounding);
+                    }
                     if(result.charAt(result.length() - 1) == '0' && result.charAt(result.length() - 2) == '.'){
                         result = result.substring(0, result.length() - 2);
                     }
@@ -315,8 +320,11 @@ public calc(){
                     }
                     for (; insertIndex < fixedInput.length(); insertIndex++) {
                         char currentChar = fixedInput.charAt(insertIndex);
-                        if (!"0123456789.".contains(String.valueOf(currentChar))) {
-                            break; 
+                        if (!"0123456789.E".contains(String.valueOf(currentChar))) {
+                            if (currentChar == '-' && insertIndex > 0 && fixedInput.charAt(insertIndex - 1) == 'E') {
+                                continue; 
+                            }
+                            break;
                         }
                     }
                 }
@@ -333,14 +341,14 @@ public calc(){
         for(int i = fixedInput.length() - 2; i >= 0; i--){
             char currentPosition = fixedInput.charAt(i);
             char currentNextPosition = fixedInput.charAt(i+1);
-            if("0123456789.".contains(String.valueOf((currentPosition))) && currentNextPosition == '('){
+            if("0123456789.E".contains(String.valueOf((currentPosition))) && currentNextPosition == '('){
                 fixedInput.insert(i+1, "*");
             }
         }
         for(int i = fixedInput.length() - 1; i > 0; i--){
             char currentPosition = fixedInput.charAt(i);
             char currentPreviousPosition = fixedInput.charAt(i-1);
-            if("0123456789.".contains(String.valueOf((currentPosition))) && currentPreviousPosition == ')'){
+            if("0123456789.E".contains(String.valueOf((currentPosition))) && currentPreviousPosition == ')'){
                 fixedInput.insert(i, "*");
             }
         }
@@ -400,7 +408,7 @@ public calc(){
         if(i > 0){
             previousSimbol = String.valueOf(finalInput.charAt(i - 1));
         }
-        if ("0123456789.".contains(currentSymbol)) {
+        if ("0123456789.E".contains(currentSymbol)) {
             currentNumber += currentSymbol;
         } 
         else if ("*+/^".contains(currentSymbol)) {
@@ -411,7 +419,7 @@ public calc(){
             equation.add(currentSymbol);
         }
         else if ("-".contains(currentSymbol)){
-            if("+-/*^(".contains(previousSimbol ) || i == 0){
+            if("+-/*^(".contains(previousSimbol ) || i == 0 || "E".equals(previousSimbol)){
                 if(currentNumber.equals("-")){
                     currentNumber = "";
                 }
@@ -459,6 +467,9 @@ public calc(){
         for(int i = 0; i < equation.size(); i++){
             if(equation.get(i).equals("*")){
                 double currentResult = Double.parseDouble(equation.get(i-1)) * Double.parseDouble(equation.get(i+1));
+                if (Double.isInfinite(currentResult)) {
+                    throw new ArithmeticException("OOB");
+                }
                 equation.set(i - 1, String.valueOf(currentResult));
                 equation.remove(i);
                 equation.remove(i);
@@ -471,6 +482,9 @@ public calc(){
                     throw new ArithmeticException("DZ");
                 }
                 double currentResult = num1 / num2;
+                if (Double.isInfinite(currentResult)) {
+                    throw new ArithmeticException("OOB");
+                }
                 equation.set(i - 1, String.valueOf(currentResult));
                 equation.remove(i);
                 equation.remove(i);
@@ -492,6 +506,9 @@ public calc(){
             if(equation.get(i).equals("-")){
                firstValue = firstValue -  Double.parseDouble(equation.get(i+1));
             }
+            if (Double.isInfinite(firstValue)) {
+                    throw new ArithmeticException("OOB");
+                }
         }
         return String.valueOf(firstValue);
     } 
