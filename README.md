@@ -3,7 +3,7 @@
 A desktop GUI calculator capable of parsing and evaluating complex mathematical expressions with arbitrary parentheses nesting, operator precedence, and implicit operations.
 
 > 📝 **Academic Context:** 
-> It was my first ever coding project developed during first semester of Computer Engineering at **UPV (ETSINF)**. The main goal was to explore Java syntax, GUI development with Swing and to practice all the Java basics. I didn't want to use anything except raw Java, and at the moment had no idea about OOP, optinal algorithms etc. So I just used everything I knew at the moment (which is not a lot) and developed maybe crude, but completely funcional calculator that can process complicated operations and whole equations.
+> It was my first ever coding project developed during my first semester of Computer Engineering at **UPV (ETSINF)**. The main goal was to explore Java syntax, GUI development with Swing and to practice all the Java basics. I didn't want to use anything except raw Java, and at the moment had no idea about OOP, optimal algorithms etc. So I just used everything I knew at the moment (which is not a lot) and developed maybe crude, but completely functional calculator that can process complicated operations.
 
 ---
 
